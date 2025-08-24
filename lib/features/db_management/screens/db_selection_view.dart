@@ -7,7 +7,7 @@ import 'package:firebase_browser/features/db_management/models/remote_db.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'dart:developer' as dev show log;
+import 'dart:developer' as dev show log;
 
 class DbSelectionView extends StatefulWidget {
   const DbSelectionView({super.key});
@@ -108,69 +108,83 @@ class _DbSelectionViewState extends State<DbSelectionView> {
                                       onExit: (event) => setState(() {
                                         hovered.remove(db);
                                       }),
-                                      child: Container(
-                                        margin: EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context).primaryColor,
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
+                                      child: InkWell(
+                                        customBorder: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadiusGeometry.circular(16),
                                         ),
+                                        onTap: () {
+                                          // TODO: load db
+                                          dev.log("Loading db: $db");
+                                        },
+                                        child: Container(
+                                          margin: EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(
+                                              context,
+                                            ).primaryColor,
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
 
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                height: 26,
-                                                child: Image.asset(
-                                                  AppIcons.firebaseIconMono,
-                                                ),
-                                              ),
-                                              SizedBox(width: 8),
-                                              Expanded(
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      db.name,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                    Text(
-                                                      db.url,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              if (isHovered)
-                                                IconButton(
-                                                  onPressed: () async {
-                                                    final bool delete =
-                                                        await showDeleteDbDialog(
-                                                          context,
-                                                        ) ??
-                                                        false;
-                                                    if (!delete ||
-                                                        !context.mounted) {
-                                                      return;
-                                                    }
-                                                    context
-                                                        .read<DatabaseCubit>()
-                                                        .deleteDatabase(db);
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.delete,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                SizedBox(
+                                                  height: 26,
+                                                  child: Image.asset(
+                                                    AppIcons.firebaseIconMono,
                                                   ),
                                                 ),
-                                            ],
+                                                SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        db.name,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                      Text(
+                                                        db.url,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                if (isHovered)
+                                                  IconButton(
+                                                    onPressed: () async {
+                                                      final bool delete =
+                                                          await showDeleteDbDialog(
+                                                            context,
+                                                          ) ??
+                                                          false;
+                                                      if (!delete ||
+                                                          !context.mounted) {
+                                                        return;
+                                                      }
+                                                      context
+                                                          .read<DatabaseCubit>()
+                                                          .deleteDatabase(db);
+                                                    },
+                                                    icon: const Icon(
+                                                      Icons.delete,
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),

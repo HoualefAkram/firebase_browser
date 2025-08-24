@@ -7,4 +7,7 @@ class RemoteDatabase {
 
   factory RemoteDatabase.fromJson(Map<String, dynamic> json) =>
       RemoteDatabase(name: json["name"], url: json["url"]);
+
+  @override
+  String toString() => "RemoteDatabase(name: $name, url: $url)";
 }
