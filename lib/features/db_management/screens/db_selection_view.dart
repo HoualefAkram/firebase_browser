@@ -1,6 +1,13 @@
 import 'package:firebase_browser/features/core/assets/icons/icons.dart';
+import 'package:firebase_browser/features/core/helpers/loading/loading_screen.dart';
+import 'package:firebase_browser/features/db_management/blocs/db_cubit/db_cubit.dart';
+import 'package:firebase_browser/features/db_management/dialogs/db_info_dialog.dart';
+import 'package:firebase_browser/features/db_management/dialogs/delete_db_dialog.dart';
+import 'package:firebase_browser/features/db_management/models/remote_db.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'dart:developer' as dev show log;
 
 class DbSelectionView extends StatefulWidget {
   const DbSelectionView({super.key});
@@ -11,81 +18,160 @@ class DbSelectionView extends StatefulWidget {
 
 class _DbSelectionViewState extends State<DbSelectionView> {
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      context.read<DatabaseCubit>().loadDatabases();
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.sizeOf(context);
     final int crossAxisCount = max(1, size.width ~/ 300);
-    return Scaffold(
-      body: Container(
-        width: size.width,
-        height: size.height,
-        padding: EdgeInsets.all(36),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: size.width * 0.25,
-              child: Image.asset(AppIcons.firebaseHorizontalFull),
-            ),
-            Row(
+    return BlocConsumer<DatabaseCubit, DatabaseState>(
+      listener: (context, dbState) {
+        if (dbState.isLoading) {
+          LoadingScreen().show(context: context);
+        } else {
+          LoadingScreen().hide();
+        }
+      },
+      builder: (context, dbState) {
+        return Scaffold(
+          body: Container(
+            width: size.width,
+            height: size.height,
+            padding: EdgeInsets.all(36),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  "Available Databases",
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                Spacer(),
                 SizedBox(
-                  height: 40,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: const Text("+ Database"),
-                  ),
+                  width: size.width * 0.25,
+                  child: Image.asset(AppIcons.firebaseHorizontalFull),
+                ),
+                Row(
+                  children: [
+                    Text(
+                      "Available Databases",
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    Spacer(),
+                    SizedBox(
+                      height: 40,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final RemoteDatabase? remoteDb =
+                              await showDbInfoDialog(context);
+                          if (remoteDb == null || !context.mounted) return;
+                          context.read<DatabaseCubit>().addDatabase(
+                            url: remoteDb.url,
+                            name: remoteDb.name,
+                          );
+                        },
+                        child: const Text("+ Database"),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 14),
+                Builder(
+                  builder: (context) {
+                    if (dbState is DatabaseInitializedState) {
+                      return Expanded(
+                        child: Container(
+                          padding: EdgeInsets.all(20),
+                          width: size.width,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: Theme.of(context).focusColor,
+                          ),
+                          child: dbState.dbs.isNotEmpty
+                              ? GridView.builder(
+                                  itemCount: dbState.dbs.length,
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: crossAxisCount,
+                                        childAspectRatio: 3,
+                                      ),
+                                  itemBuilder: (context, index) {
+                                    final db = dbState.dbs[index];
+                                    return Container(
+                                      margin: EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).primaryColor,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            SizedBox(
+                                              height: 26,
+                                              child: Image.asset(
+                                                AppIcons.firebaseIconMono,
+                                              ),
+                                            ),
+                                            SizedBox(width: 8),
+                                            Expanded(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    db.name,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  Text(
+                                                    db.url,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            IconButton(
+                                              onPressed: () async {
+                                                final bool delete =
+                                                    await showDeleteDbDialog(
+                                                      context,
+                                                    ) ??
+                                                    false;
+                                                if (!delete ||
+                                                    !context.mounted) {
+                                                  return;
+                                                }
+                                                context
+                                                    .read<DatabaseCubit>()
+                                                    .deleteDatabase(db);
+                                              },
+                                              icon: const Icon(Icons.delete),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Center(child: Text("No Databases Available.")),
+                        ),
+                      );
+                    } else {
+                      return const CircularProgressIndicator();
+                    }
+                  },
                 ),
               ],
             ),
-            SizedBox(height: 14),
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.all(20),
-                width: size.width,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Theme.of(context).focusColor,
-                ),
-                child: GridView.builder(
-                  itemCount: 2, // TODO: change
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    childAspectRatio: 3,
-                  ),
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              height: 26,
-                              child: Image.asset(AppIcons.firebaseIconMono),
-                            ),
-                            SizedBox(width: 8),
-                            Text("bim-three-vue"),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
