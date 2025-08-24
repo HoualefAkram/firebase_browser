@@ -1,5 +1,5 @@
 import 'package:firebase_browser/features/core/themes/app_theme.dart';
-import 'package:firebase_browser/features/db_selection/screens/db_selection_view.dart';
+import 'package:firebase_browser/features/db_management/screens/db_selection_view.dart';
 import 'package:flutter/material.dart';
 
 void main() {
