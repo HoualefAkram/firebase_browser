@@ -17,6 +17,8 @@ class DbSelectionView extends StatefulWidget {
 }
 
 class _DbSelectionViewState extends State<DbSelectionView> {
+  Set<RemoteDatabase> hovered = <RemoteDatabase>{};
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -95,65 +97,81 @@ class _DbSelectionViewState extends State<DbSelectionView> {
                                         childAspectRatio: 3,
                                       ),
                                   itemBuilder: (context, index) {
-                                    final db = dbState.dbs[index];
-                                    return Container(
-                                      margin: EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(context).primaryColor,
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
+                                    final RemoteDatabase db =
+                                        dbState.dbs[index];
+                                    final bool isHovered = hovered.contains(db);
 
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            SizedBox(
-                                              height: 26,
-                                              child: Image.asset(
-                                                AppIcons.firebaseIconMono,
+                                    return MouseRegion(
+                                      onEnter: (event) => setState(() {
+                                        hovered.add(db);
+                                      }),
+                                      onExit: (event) => setState(() {
+                                        hovered.remove(db);
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).primaryColor,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                height: 26,
+                                                child: Image.asset(
+                                                  AppIcons.firebaseIconMono,
+                                                ),
                                               ),
-                                            ),
-                                            SizedBox(width: 8),
-                                            Expanded(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    db.name,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                  Text(
-                                                    db.url,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ],
+                                              SizedBox(width: 8),
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      db.name,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    Text(
+                                                      db.url,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                            IconButton(
-                                              onPressed: () async {
-                                                final bool delete =
-                                                    await showDeleteDbDialog(
-                                                      context,
-                                                    ) ??
-                                                    false;
-                                                if (!delete ||
-                                                    !context.mounted) {
-                                                  return;
-                                                }
-                                                context
-                                                    .read<DatabaseCubit>()
-                                                    .deleteDatabase(db);
-                                              },
-                                              icon: const Icon(Icons.delete),
-                                            ),
-                                          ],
+                                              if (isHovered)
+                                                IconButton(
+                                                  onPressed: () async {
+                                                    final bool delete =
+                                                        await showDeleteDbDialog(
+                                                          context,
+                                                        ) ??
+                                                        false;
+                                                    if (!delete ||
+                                                        !context.mounted) {
+                                                      return;
+                                                    }
+                                                    context
+                                                        .read<DatabaseCubit>()
+                                                        .deleteDatabase(db);
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.delete,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     );
