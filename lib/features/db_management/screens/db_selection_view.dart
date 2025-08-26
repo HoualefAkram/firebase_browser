@@ -4,10 +4,11 @@ import 'package:firebase_browser/features/db_management/blocs/db_cubit/db_cubit.
 import 'package:firebase_browser/features/db_management/dialogs/db_info_dialog.dart';
 import 'package:firebase_browser/features/db_management/dialogs/delete_db_dialog.dart';
 import 'package:firebase_browser/features/db_management/models/remote_db.dart';
+import 'package:firebase_browser/features/db_management/screens/data_view.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:developer' as dev show log;
+// import 'dart:developer' as dev show log;
 
 class DbSelectionView extends StatefulWidget {
   const DbSelectionView({super.key});
@@ -113,9 +114,16 @@ class _DbSelectionViewState extends State<DbSelectionView> {
                                           borderRadius:
                                               BorderRadiusGeometry.circular(16),
                                         ),
-                                        onTap: () {
-                                          // TODO: load db
-                                          dev.log("Loading db: $db");
+                                        onTap: () async {
+                                          await context
+                                              .read<DatabaseCubit>()
+                                              .selectDb(db.url);
+                                          if (!context.mounted) return;
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => DataView(),
+                                            ),
+                                          );
                                         },
                                         child: Container(
                                           margin: EdgeInsets.all(12),

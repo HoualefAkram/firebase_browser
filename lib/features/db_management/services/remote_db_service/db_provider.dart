@@ -1,10 +1,5 @@
-import 'package:firebase_browser/features/db_management/models/remote_db.dart';
+import 'package:firebase_browser/features/db_management/models/db_data.dart';
 
 abstract class DbProvider {
-  Future<List<RemoteDatabase>> loadDatabases();
-
-  Future<RemoteDatabase> addRemoteDatabase({
-    required String url,
-    required String name,
-  });
+  Future<List<DbData>> loadItem({required String path});
 }
