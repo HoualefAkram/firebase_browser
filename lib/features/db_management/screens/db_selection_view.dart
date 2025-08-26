@@ -55,7 +55,7 @@ class _DbSelectionViewState extends State<DbSelectionView> {
                 ),
                 Row(
                   children: [
-                    Text(
+                    SelectableText(
                       "Available Databases",
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),

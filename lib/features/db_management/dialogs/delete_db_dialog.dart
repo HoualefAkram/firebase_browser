@@ -4,8 +4,10 @@ Future<bool?> showDeleteDbDialog(BuildContext context) async {
   return showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text("Warning"),
-      content: const Text("Are you sure you want to delete this database?"),
+      title: const SelectableText("Warning"),
+      content: const SelectableText(
+        "Are you sure you want to delete this database?",
+      ),
       actions: [
         TextButton(
           onPressed: () {

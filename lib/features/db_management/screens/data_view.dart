@@ -56,7 +56,9 @@ class DataView extends StatelessWidget {
                               )
                             : TextButton(
                                 onPressed: null,
-                                child: Text("${item.name}: ${item.value}"),
+                                child: SelectableText(
+                                  "${item.name}: ${item.value}",
+                                ),
                               );
                       },
                     ),
@@ -64,7 +66,9 @@ class DataView extends StatelessWidget {
                 ],
               );
             } else {
-              return const Center(child: Text("Error: unknown state!"));
+              return const Center(
+                child: SelectableText("Error: unknown state!"),
+              );
             }
           },
         ),

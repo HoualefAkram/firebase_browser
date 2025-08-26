@@ -36,15 +36,15 @@ class _DbInfoDialogState extends State<DbInfoDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("DATABASE"),
+      title: const SelectableText("DATABASE"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: urlController,
             decoration: InputDecoration(
-              hint: Text("url"),
-              label: const Text("url"),
+              hint: SelectableText("url"),
+              label: const SelectableText("url"),
               errorText: isUrlValid ? null : "url can't be empty",
             ),
           ),

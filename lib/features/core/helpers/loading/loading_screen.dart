@@ -85,7 +85,7 @@ class LoadingScreen {
                         stream: loadingScreenText.stream,
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
-                            return Text(
+                            return SelectableText(
                               snapshot.data as String,
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.titleMedium,
