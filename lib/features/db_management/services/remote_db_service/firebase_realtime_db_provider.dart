@@ -14,38 +14,23 @@ class FirebaseRealtimeDbProvider implements DbProvider {
 
   FirebaseHttp get _firebaseHttp => FirebaseHttp(authority: dbUrl);
 
-  Future<bool> _isNode({required String path}) async {
+  int _dynamicLength(dynamic object) {
+    if (object is Iterable) return object.length;
+    if (object is Map) return object.length;
+    return 1;
+  }
+
+  Future<bool> _isLeaf({required String path}) async {
     final http.Response response = await _firebaseHttp.get(
       path: path,
-      limitToFirst: 1,
+      limitToFirst: 2,
       shallow: true,
     );
     if (response.statusCode == 200) {
       final dynamic body = jsonDecode(response.body);
-      return body is Map;
-    } else {
-      throw DbHttpException(
-        statusCode: response.statusCode,
-        body: response.body,
-      );
-    }
-  }
-
-  Future<List<Leaf>> getLeafs(String path) async {
-    final http.Response response = await _firebaseHttp.get(
-      path: path,
-      shallow: false,
-    );
-
-    if (response.statusCode == 200) {
-      final Map body = jsonDecode(response.body);
-      final keys = body.keys;
-      final values = body.values;
-      return List.generate(
-        body.keys.length,
-        (index) =>
-            Leaf(name: keys.elementAt(index), value: values.elementAt(index)),
-      );
+      if (body is Map) return false;
+      if (_dynamicLength(body) > 1) return false;
+      return true;
     } else {
       throw DbHttpException(
         statusCode: response.statusCode,
@@ -56,23 +41,26 @@ class FirebaseRealtimeDbProvider implements DbProvider {
 
   @override
   Future<List<DbData>> loadItem({required String path}) async {
+    final bool isLeaf = await _isLeaf(path: path);
+
     final http.Response response = await _firebaseHttp.get(
       path: path,
       shallow: true,
     );
     if (response.statusCode == 200) {
+      if (isLeaf) {
+        final String leafName = path.split("/").last.split(".").first;
+        final dynamic leafValue = jsonDecode(response.body);
+        return [Leaf(name: leafName, value: leafValue)];
+      }
       final Map body = jsonDecode(response.body);
       final keys = body.keys;
-      final bool isNode = await _isNode(path: "$path/${body.keys.first}");
-      if (isNode) {
-        return List.generate(
-          body.keys.length,
-          (index) => Node(name: keys.elementAt(index)),
-        );
-      } else {
-        // leaf
-        return await getLeafs(path);
-      }
+      final List<Node> output = List.generate(
+        body.keys.length,
+        (index) => Node(name: keys.elementAt(index)),
+      );
+      output.sort((a, b) => a.name.compareTo(b.name));
+      return output;
     } else {
       throw DbHttpException(
         statusCode: response.statusCode,
