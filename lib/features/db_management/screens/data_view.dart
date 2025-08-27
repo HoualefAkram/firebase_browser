@@ -10,6 +10,7 @@ class DataView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Size size = MediaQuery.sizeOf(context);
     return BlocListener<DatabaseCubit, DatabaseState>(
       listener: (context, dbState) {
         if (dbState.quit ?? false) {
@@ -22,55 +23,85 @@ class DataView extends StatelessWidget {
         }
       },
       child: Scaffold(
-        body: BlocBuilder<DatabaseCubit, DatabaseState>(
-          builder: (context, dbState) {
-            if (dbState is DatabaseInitializedState) {
-              final Iterable<DbData>? data = dbState.data;
-              if (data == null) {
-                return const SizedBox.shrink();
+        body: Container(
+          width: size.width,
+          height: size.height,
+          padding: EdgeInsets.all(36),
+          child: BlocBuilder<DatabaseCubit, DatabaseState>(
+            builder: (context, dbState) {
+              if (dbState is DatabaseInitializedState) {
+                final Iterable<DbData>? data = dbState.data;
+                if (data == null) {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: Theme.of(context).focusColor.withAlpha(20),
+                      ),
+                      child: Row(
+                        children: [
+                          TextButton.icon(
+                            onPressed: () => {
+                              context.read<DatabaseCubit>().backNode(),
+                            },
+                            label: Text("Back"),
+                            icon: Icon(Icons.arrow_back),
+                          ),
+                          const Spacer(),
+                          Text(dbState.currentPath),
+                          const Spacer(),
+                          TextButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            label: Text("Home"),
+                            icon: Icon(Icons.home),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.all(20),
+                        width: size.width,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: Theme.of(context).focusColor,
+                        ),
+                        child: ListView.builder(
+                          itemCount: data.length,
+                          itemBuilder: (context, index) {
+                            final DbData item = data.elementAt(index);
+                            return item is Node
+                                ? TextButton(
+                                    onPressed: () {
+                                      context.read<DatabaseCubit>().load(item);
+                                    },
+                                    child: Text(item.name),
+                                  )
+                                : TextButton(
+                                    onPressed: null,
+                                    child: SelectableText(
+                                      "${item.name}: ${item.value}",
+                                    ),
+                                  );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return const Center(
+                  child: SelectableText("Error: unknown state!"),
+                );
               }
-
-              return Column(
-                children: [
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: TextButton.icon(
-                      onPressed: () => {
-                        context.read<DatabaseCubit>().backNode(),
-                      },
-                      label: Text("Back"),
-                      icon: Icon(Icons.arrow_back),
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: data.length,
-                      itemBuilder: (context, index) {
-                        final DbData item = data.elementAt(index);
-                        return item is Node
-                            ? TextButton(
-                                onPressed: () {
-                                  context.read<DatabaseCubit>().load(item);
-                                },
-                                child: Text(item.name),
-                              )
-                            : TextButton(
-                                onPressed: null,
-                                child: SelectableText(
-                                  "${item.name}: ${item.value}",
-                                ),
-                              );
-                      },
-                    ),
-                  ),
-                ],
-              );
-            } else {
-              return const Center(
-                child: SelectableText("Error: unknown state!"),
-              );
-            }
-          },
+            },
+          ),
         ),
       ),
     );
