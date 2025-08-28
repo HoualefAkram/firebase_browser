@@ -92,8 +92,19 @@ class DataView extends StatelessWidget {
                                   )
                                 : TextButton(
                                     onPressed: null,
-                                    child: SelectableText(
-                                      "${item.name}: ${item.value}",
+                                    child: SelectableText.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(text: "${item.name}: "),
+                                          TextSpan(
+                                            text: "${item.value}",
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
                                   );
                           },
