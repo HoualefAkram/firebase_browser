@@ -5,6 +5,8 @@ import 'package:firebase_browser/features/db_management/models/node.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+typedef OnPathItemClicked = void Function(String itemPath);
+
 class DataView extends StatelessWidget {
   const DataView({super.key});
 
@@ -50,9 +52,14 @@ class DataView extends StatelessWidget {
                             label: Text("Back"),
                             icon: Icon(Icons.arrow_back),
                           ),
-                          const Spacer(),
-                          Text(dbState.currentPath),
-                          const Spacer(),
+                          _buildPathWidget(
+                            path: dbState.currentPath,
+                            onClicked: (itemPath) {
+                              context.read<DatabaseCubit>().jumpTo(
+                                path: itemPath,
+                              );
+                            },
+                          ),
                           TextButton.icon(
                             onPressed: () {
                               Navigator.of(context).pop();
@@ -102,6 +109,47 @@ class DataView extends StatelessWidget {
               }
             },
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPathWidget({
+    required String path,
+    required OnPathItemClicked onClicked,
+  }) {
+    final List<String> nodes = path.split("/");
+    return Expanded(
+      child: SizedBox(
+        height: 32,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: nodes.length,
+          itemBuilder: (context, index) {
+            final String node = nodes[index];
+            return Row(
+              children: [
+                Container(
+                  margin: EdgeInsets.all(2),
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      minimumSize: Size(10, 10),
+                    ),
+                    onPressed: () {
+                      final String itemPath = nodes
+                          .sublist(0, index + 1)
+                          .join("/");
+                      onClicked.call(itemPath);
+                    },
+                    child: Text(node),
+                  ),
+                ),
+                Text("/"),
+              ],
+            );
+          },
         ),
       ),
     );

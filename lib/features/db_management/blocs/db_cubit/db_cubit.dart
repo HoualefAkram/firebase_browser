@@ -135,6 +135,26 @@ class DatabaseCubit extends Cubit<DatabaseState> {
     }
   }
 
+  Future<void> jumpTo({required String path}) async {
+    try {
+      final DatabaseInitializedState initializedState =
+          state as DatabaseInitializedState;
+      emit(initializedState.copyWith(isLoading: true));
+      final Iterable<DbData> data = await db.loadItem(path: path);
+      dev.log("Jumpting to: $path");
+      emit(
+        initializedState.copyWith(
+          data: data,
+          isLoading: false,
+          currentPath: path,
+        ),
+      );
+    } catch (e, stackTrace) {
+      dev.log("Caught error: $e");
+      dev.log("Stacktrace: $stackTrace");
+    }
+  }
+
   Future<void> backNode() async {
     try {
       final DatabaseInitializedState initializedState =
