@@ -95,7 +95,10 @@ class DataView extends StatelessWidget {
                                     child: SelectableText.rich(
                                       TextSpan(
                                         children: [
-                                          TextSpan(text: "${item.name}: "),
+                                          TextSpan(
+                                            text:
+                                                "${item.name} (${item.value.runtimeType}): ",
+                                          ),
                                           TextSpan(
                                             text: "${item.value}",
                                             style: const TextStyle(
